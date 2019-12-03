@@ -7,4 +7,7 @@ type Iserver interface {
 	Stop()
 
 	Serve()
+
+	//主要给客户端链接处理使用
+	AddRouter(router IRouter)
 }

@@ -13,6 +13,8 @@ type Server struct {
 	IPversion string
 	IP        string
 	Port      int
+	//怎么理解？
+	Router ziface.IRouter
 }
 
 func (s *Server) Start() {
@@ -44,7 +46,7 @@ func (s *Server) Start() {
 				continue
 			}
 			//处理该新链接请求的业务方法，此时应该有handle和conn绑定的
-			dealConn := NewConnection(conn, cid, CallBackToClient)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 			//启动当前链接的处理业务
 			go dealConn.Start()
@@ -71,6 +73,7 @@ func NewServer(name string) ziface.Iserver {
 		IPversion: "tcp4",
 		IP:        "0.0.0.0",
 		Port:      8999,
+		Router:    nil,
 	}
 	return s
 }
@@ -85,4 +88,11 @@ func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
 		return errors.New("CallBackToClient error")
 	}
 	return nil
+}
+
+func (s *Server) AddRouter(router ziface.IRouter) {
+
+	s.Router = router
+
+	fmt.Println("add router success!")
 }
