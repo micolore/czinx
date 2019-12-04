@@ -24,6 +24,8 @@ type Connection struct {
 
 	//告知该链接已经退出/停止的channel
 	ExitBuffChan chan bool
+
+	msgChan chan []byte
 }
 
 func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandle) *Connection {
@@ -35,6 +37,7 @@ func NewConnection(conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandl
 		isClosed:  false,
 		//管道存储的是协程间通信的相关信息
 		ExitBuffChan: make(chan bool, 1),
+		msgChan:      make(chan []byte),
 	}
 	return c
 }
@@ -93,10 +96,33 @@ func (c *Connection) StartReader() {
 	}
 }
 
+//写消息goroutine
+func (c *Connection) StartWriter() {
+	fmt.Println(c.RemoteAddr().String(), "[conn write exit!]")
+	defer fmt.Println(c.RemoteAddr().String(), "[conn writer exit!]")
+
+	for {
+		select {
+
+		case data := <-c.msgChan:
+			if _, err := c.Conn.Write(data); err != nil {
+				fmt.Println("send data error: ,", err, "conn writer exit")
+				return
+			}
+		case <-c.ExitBuffChan:
+			return
+		}
+	}
+}
+
 func (c *Connection) Start() {
 
 	//开启处理该链接读取到客户端数据之后的请求业务
 	go c.StartReader()
+
+	//开启用于写回客户端数据流程的Goroutine
+	go c.StartWriter()
+
 	//开启链接之后开始阻塞，直到链接相关处理执行完成
 	for {
 		select {
@@ -148,10 +174,8 @@ func (c *Connection) SendMsg(msgId uint32, data []byte) error {
 		fmt.Println(" pack error msg id = ", msgId)
 		return errors.New("pack error msg ")
 	}
-	if _, err := c.Conn.Write(msg); err != nil {
-		fmt.Println("write msg id ", msgId, " error ")
-		c.ExitBuffChan <- true
-		return errors.New("conn write error")
-	}
+
+	c.msgChan <- msg
+
 	return nil
 }
