@@ -7,13 +7,15 @@ import (
 )
 
 type GlobalObj struct {
-	TcpServer     ziface.Iserver
-	Host          string
-	TcpPort       int
-	Name          string
-	Version       string
-	MaxPacketSize uint32
-	MaxConn       int
+	TcpServer        ziface.Iserver
+	Host             string
+	TcpPort          int
+	Name             string
+	Version          string
+	MaxPacketSize    uint32
+	MaxConn          int
+	WorkerPoolSize   uint32
+	MaxWorkerTaskLen uint32
 }
 
 var GlobalObject *GlobalObj
@@ -34,12 +36,14 @@ func init() {
 
 	GlobalObject = &GlobalObj{
 
-		Name:          "ZinxServerApp",
-		Version:       "V0.4",
-		TcpPort:       7777,
-		Host:          "0.0.0.0",
-		MaxConn:       12000,
-		MaxPacketSize: 4096,
+		Name:             "ZinxServerApp",
+		Version:          "V0.4",
+		TcpPort:          7777,
+		Host:             "0.0.0.0",
+		MaxConn:          12000,
+		MaxPacketSize:    4096,
+		WorkerPoolSize:   3,
+		MaxWorkerTaskLen: 1024,
 	}
 	GlobalObject.Reload()
 }

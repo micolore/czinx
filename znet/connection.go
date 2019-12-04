@@ -1,6 +1,7 @@
 package znet
 
 import (
+	"czinx/utils"
 	"czinx/ziface"
 	"errors"
 	"fmt"
@@ -91,7 +92,12 @@ func (c *Connection) StartReader() {
 			msg:  msgHead,
 		}
 
-		go c.MsgHandle.DoMsgHandler(&req)
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			c.MsgHandle.SendMsgToTaskQueue(&req)
+		} else {
+			go c.MsgHandle.DoMsgHandler(&req)
+
+		}
 
 	}
 }
