@@ -22,6 +22,12 @@ type Iconnection interface {
 	SendMsg(msgId uint32, data []byte) error //no buff
 
 	SendBuffMsg(msgID uint32, data []byte) error // have buff
+
+	SetProperty(key string, value interface{})
+
+	GetProperty(key string) (interface{}, error)
+
+	RemoveProperty(key string)
 }
 
 //定义一个统一处理链接业务的接口

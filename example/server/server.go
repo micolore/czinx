@@ -43,13 +43,25 @@ func DoConnectionBegin(conn ziface.Iconnection) {
 
 	err := conn.SendMsg(2, []byte("DoConnection Begin..."))
 
-	if err != nil {
+	conn.SetProperty("name", "xiaowang")
+	conn.SetProperty("home", "helan")
 
+	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func DoConnectionLost(conn ziface.Iconnection) {
+
+	if name, err := conn.GetProperty("name"); err == nil {
+
+		fmt.Println("conn property name= ", name)
+	}
+
+	if home, err := conn.GetProperty("home"); err == nil {
+
+		fmt.Println("conn property home= ", home)
+	}
 
 	fmt.Println("DoConnection Lost...")
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"sync"
 )
 
 type Connection struct {
@@ -28,8 +29,13 @@ type Connection struct {
 	//告知该链接已经退出/停止的channel
 	ExitBuffChan chan bool
 
-	msgChan     chan []byte
+	msgChan chan []byte
+
 	msgBuffChan chan []byte
+
+	property map[string]interface{}
+
+	propertyLock sync.RWMutex
 }
 
 //v0.9 add server
@@ -45,6 +51,7 @@ func NewConnection(server ziface.Iserver, conn *net.TCPConn, connID uint32, msgH
 		ExitBuffChan: make(chan bool, 1),
 		msgChan:      make(chan []byte),
 		msgBuffChan:  make(chan []byte),
+		property:     make(map[string]interface{}),
 	}
 	//v0.8-将新创建的Conn添加到链接管理中
 
@@ -223,4 +230,37 @@ func (c *Connection) SendBuffMsg(connID uint32, data []byte) error {
 	}
 	c.msgBuffChan <- msg
 	return nil
+}
+
+func (c *Connection) SetProperty(key string, value interface{}) {
+
+	c.propertyLock.Lock()
+
+	defer c.propertyLock.Unlock()
+
+	fmt.Println("connection set property key:", key)
+
+	c.property[key] = value
+}
+
+func (c *Connection) GetProperty(key string) (interface{}, error) {
+
+	c.propertyLock.Lock()
+
+	defer c.propertyLock.Unlock()
+
+	if value, ok := c.property[key]; ok {
+		return value, nil
+	} else {
+		return nil, errors.New("no property found")
+	}
+}
+
+func (c *Connection) RemoveProperty(key string) {
+
+	c.propertyLock.Lock()
+
+	defer c.propertyLock.Unlock()
+
+	delete(c.property, key)
 }
