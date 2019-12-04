@@ -7,7 +7,6 @@ type Message struct {
 }
 
 func NewPackage(id uint32, data []byte) *Message {
-
 	// new 根据位置初始化、根据名称初始化、以及匿名字段的数据类型问题
 	// make（map) init的问题
 	return &Message{

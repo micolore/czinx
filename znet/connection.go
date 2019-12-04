@@ -2,7 +2,9 @@ package znet
 
 import (
 	"czinx/ziface"
+	"errors"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -45,25 +47,54 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		buf := make([]byte, 512)
-		_, err := c.Conn.Read(buf)
+
+		dp := NewDataPack()
+		headData := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(c.GetTcpConnection(), headData); err != nil {
+			fmt.Println("read msg head error", err)
+			continue
+		}
+
+		msgHead, err := dp.Unpack(headData)
 		if err != nil {
-			fmt.Println("recv buf error ", err)
+			fmt.Println("unpack error ", err)
 			c.ExitBuffChan <- true
 			continue
 		}
-		//从当前客户端请求得到request数据
+
+		if msgHead.GetDataLen() > 0 {
+
+			data := make([]byte, msgHead.GetDataLen())
+			if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
+				fmt.Println("read msg data error ", err)
+				c.ExitBuffChan <- true
+				continue
+			}
+
+			msgHead.SetData(data)
+
+		}
+		//dataStr := string(msgHead.GetData())
+		//fmt.Println("send router data ", dataStr)
+		//fmt.Println(data)
+		//fmt.Println("conn reev data length ", msg.GetDataLen())
+		//fmt.Println("msg str data", str)
+		//fmt.Println("msg data = ", data)
+		//str := string(data)
+		//fmt.Println("msg id = ", msgHead.GetMsgId())
+		//fmt.Println("msg len = ", msgHead.GetDataLen())
+
 		req := Request{
 			conn: c,
-			data: buf,
+			msg:  msgHead,
 		}
-		//从router中找到注册绑定coon对应handle
+
 		go func(request ziface.IRequest) {
-			//执行注册的路由方法
 			c.Router.PreHandle(request)
 			c.Router.Handle(request)
 			c.Router.PostHandle(request)
 		}(&req)
+
 	}
 }
 
@@ -108,4 +139,24 @@ func (c *Connection) GetConnID() uint32 {
 func (c *Connection) RemoteAddr() net.Addr {
 
 	return c.Conn.RemoteAddr()
+}
+
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+
+	if c.isClosed == true {
+		return errors.New("Connection  closed when send msg")
+	}
+
+	dp := NewDataPack()
+	msg, err := dp.Pack(NewPackage(msgId, data))
+	if err != nil {
+		fmt.Println(" pack error msg id = ", msgId)
+		return errors.New("pack error msg ")
+	}
+	if _, err := c.Conn.Write(msg); err != nil {
+		fmt.Println("write msg id ", msgId, " error ")
+		c.ExitBuffChan <- true
+		return errors.New("conn write error")
+	}
+	return nil
 }
