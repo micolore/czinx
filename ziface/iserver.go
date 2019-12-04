@@ -9,5 +9,6 @@ type Iserver interface {
 	Serve()
 
 	//主要给客户端链接处理使用
-	AddRouter(router IRouter)
+	//v0.6 add msgId
+	AddRouter(msgId uint32, router IRouter)
 }

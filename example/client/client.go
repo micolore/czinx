@@ -19,7 +19,7 @@ func main() {
 	}
 	for {
 		dp := znet.NewDataPack()
-		msg, _ := dp.Pack(znet.NewPackage(101, []byte("Zinx V0.5 Client Test Message")))
+		msg, _ := dp.Pack(znet.NewPackage(1, []byte("Zinx V0.5 Client Test Message")))
 		_, err = conn.Write(msg)
 		if err != nil {
 			fmt.Println("write error err", err)
