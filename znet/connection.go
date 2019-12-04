@@ -64,28 +64,26 @@ func (c *Connection) StartReader() {
 		dp := NewDataPack()
 		headData := make([]byte, dp.GetHeadLen())
 		if _, err := io.ReadFull(c.GetTcpConnection(), headData); err != nil {
-			fmt.Println("read msg head error", err)
-			continue
+			fmt.Println(" Connection read  head data error", err)
+			break
 		}
 
 		msgHead, err := dp.Unpack(headData)
 		if err != nil {
 			fmt.Println("unpack error ", err)
 			c.ExitBuffChan <- true
-			continue
+			break
 		}
-
+		var data []byte
 		if msgHead.GetDataLen() > 0 {
-
-			data := make([]byte, msgHead.GetDataLen())
+			data = make([]byte, msgHead.GetDataLen())
 			if _, err := io.ReadFull(c.GetTcpConnection(), data); err != nil {
-				fmt.Println("read msg data error ", err)
-				c.ExitBuffChan <- true
-				continue
+				fmt.Println("Connection read msg data error ", err)
+				break
 			}
-			msgHead.SetData(data)
-
 		}
+		msgHead.SetData(data)
+
 		//dataStr := string(msgHead.GetData())
 		//fmt.Println("send router data ", dataStr)
 		//fmt.Println(data)
