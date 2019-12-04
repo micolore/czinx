@@ -17,6 +17,10 @@ type Server struct {
 	//怎么理解？
 	//Router ziface.IRouter
 	msgHandle ziface.IMsgHandle
+	ConnMgr   ziface.IConnmanager
+
+	OnConnStart func(conn ziface.Iconnection)
+	OnConnStop  func(conn ziface.Iconnection)
 }
 
 func (s *Server) Start() {
@@ -48,14 +52,23 @@ func (s *Server) Start() {
 
 		// 启动网络连接业务(阻塞)
 		for {
+
 			conn, err := listenter.AcceptTCP()
 			if err != nil {
 				fmt.Println("accept err ", err)
 				continue
 			}
+
+			//v0.8
+			if s.ConnMgr.Len() >= utils.GlobalObject.MaxConn {
+				conn.Close()
+				continue
+			}
+
 			//处理该新链接请求的业务方法，此时应该有handle和conn绑定的
-			dealConn := NewConnection(conn, cid, s.msgHandle)
+			dealConn := NewConnection(s, conn, cid, s.msgHandle)
 			cid++
+
 			//启动当前链接的处理业务
 			go dealConn.Start()
 		}
@@ -63,7 +76,9 @@ func (s *Server) Start() {
 }
 
 func (s *Server) Stop() {
-	fmt.Println("[STOP] zinx server ", s.Name)
+	fmt.Println("[STOP] Zinx server ", s.Name)
+
+	s.ConnMgr.CleanConn()
 }
 
 func (s *Server) Serve() {
@@ -84,6 +99,7 @@ func NewServer(name string) ziface.Iserver {
 		IP:        utils.GlobalObject.Host,
 		Port:      utils.GlobalObject.TcpPort,
 		msgHandle: NewMsgHandle(),
+		ConnMgr:   NewConnmanager(),
 	}
 	return s
 }
@@ -103,4 +119,33 @@ func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
 func (s *Server) AddRouter(msgId uint32, router ziface.IRouter) {
 	s.msgHandle.AddRouter(msgId, router)
 	fmt.Println("add router success!")
+}
+
+func (s *Server) GetConnMgr() ziface.IConnmanager {
+	return s.ConnMgr
+}
+
+func (s *Server) SetOnConnStart(hookFunc func(ziface.Iconnection)) {
+
+	s.OnConnStart = hookFunc
+}
+
+func (s *Server) SetOnConnStop(hookFunc func(ziface.Iconnection)) {
+	s.OnConnStop = hookFunc
+}
+
+func (s *Server) CallOnConnStart(conn ziface.Iconnection) {
+	if s.OnConnStart != nil {
+
+		fmt.Println("====>callOnConnStart")
+		s.OnConnStart(conn)
+	}
+}
+
+func (s *Server) CallOnConnStop(conn ziface.Iconnection) {
+	if s.OnConnStop != nil {
+
+		fmt.Println("====>callOnConnStart")
+		s.OnConnStop(conn)
+	}
 }

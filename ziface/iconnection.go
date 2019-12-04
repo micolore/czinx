@@ -19,7 +19,9 @@ type Iconnection interface {
 	//获取远程客户端地址信息
 	RemoteAddr() net.Addr
 
-	SendMsg(msgId uint32, data []byte) error
+	SendMsg(msgId uint32, data []byte) error //no buff
+
+	SendBuffMsg(msgID uint32, data []byte) error // have buff
 }
 
 //定义一个统一处理链接业务的接口

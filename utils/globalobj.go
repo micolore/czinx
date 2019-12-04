@@ -42,8 +42,8 @@ func init() {
 		Host:             "0.0.0.0",
 		MaxConn:          12000,
 		MaxPacketSize:    4096,
-		WorkerPoolSize:   3,
-		MaxWorkerTaskLen: 1024,
+		WorkerPoolSize:   1,
+		MaxWorkerTaskLen: 1,
 	}
 	GlobalObject.Reload()
 }
