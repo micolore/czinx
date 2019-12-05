@@ -37,6 +37,8 @@ func (mh *MsgHandle) DoMsgHandler(request ziface.IRequest) {
 }
 
 //添加路由
+//服务器也有添加路由的方法，但是跟msghandle里面的不一样
+//这个是往消息队列里面的RouterMap加，感觉有点冗余，因为server已经添加了，这里又增加了一次
 func (mh *MsgHandle) AddRouter(msgId uint32, router ziface.IRouter) {
 
 	if _, ok := mh.Apis[msgId]; ok {

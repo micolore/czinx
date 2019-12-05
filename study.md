@@ -117,4 +117,5 @@
     * 基本代码写完了，但是很多细节以及设计原理还没有深入的思考，后面花一点时间来进行思考（加注释，用自己的话来重复的解释一遍），不仅是go语法上的，还有服务器架构上的。
     * https://github.com/alfred-zhong/wserver 这个太基础了，处理的链接数量有限，即使负载了也不一定有用
     * request、connection、msg之间的关系，以及它们与server的关系
-​    
+    * router 、server、msghandle的关系
+      一个服务只能有一个server，一个server只能有一个msghandle，一个msghandle有多个router，在当前这个版本里面是由一个msghandle来进行管理所有的router实例 

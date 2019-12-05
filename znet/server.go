@@ -55,7 +55,7 @@ func (s *Server) Start() {
 		//获取一个tcp addr
 		addr, err := net.ResolveTCPAddr(s.IPversion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
-			fmt.Println("resolveTcp addr err", err)
+			fmt.Println("ResolveTcp addr err", err)
 			return
 		}
 
@@ -79,7 +79,7 @@ func (s *Server) Start() {
 				continue
 			}
 
-			//如果连接管理的长度大于系统配置的长度，关闭连接
+			//如果连接管理器里面的长度大于系统默认配置的长度，则关闭连接，拒绝服务
 			if s.ConnMgr.Len() >= utils.GlobalObject.MaxConn {
 				conn.Close()
 				continue
@@ -121,9 +121,10 @@ func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
 }
 
 //添加路由
+//是给server里面的msghandle增加router
 func (s *Server) AddRouter(msgId uint32, router ziface.IRouter) {
 	s.msgHandle.AddRouter(msgId, router)
-	fmt.Println("add router success!")
+	fmt.Println("Add router success!")
 }
 
 //获取服务器连接管理器

@@ -8,6 +8,7 @@ import (
 )
 
 //定义连接管理器
+//该连接管理器的作用好像没有提供连接复用
 type ConnManager struct {
 	connections map[uint32]ziface.Iconnection
 	connLock    sync.RWMutex
@@ -22,13 +23,14 @@ func NewConnmanager() *ConnManager {
 }
 
 //新增连接到连接管理器里面
+// 有个问题就是，无限往里面加，在服务初始化的时候进行判断是否生成connection对象
 func (connMgr *ConnManager) Add(conn ziface.Iconnection) {
 
 	connMgr.connLock.Lock()
 	defer connMgr.connLock.Unlock()
 
 	connMgr.connections[conn.GetConnID()] = conn
-	fmt.Println("connection add  to connections successfully conn num = ", connMgr.Len())
+	fmt.Println("Connection add  to connections successfully conn num = ", connMgr.Len())
 }
 
 //从连接管理器里面移除连接
@@ -38,7 +40,7 @@ func (connMgr *ConnManager) Remove(conn ziface.Iconnection) {
 	defer connMgr.connLock.Unlock()
 
 	delete(connMgr.connections, conn.GetConnID())
-	fmt.Println("  connect remove connID=", conn.GetConnID(), "successfully conn num ", connMgr.Len())
+	fmt.Println("Connect remove connID=", conn.GetConnID(), "successfully conn num ", connMgr.Len())
 }
 
 //根据连接id获取连接
@@ -50,7 +52,7 @@ func (connMgr *ConnManager) Get(connID uint32) (ziface.Iconnection, error) {
 	if conn, ok := connMgr.connections[connID]; ok {
 		return conn, nil
 	} else {
-		return nil, errors.New("connection not found")
+		return nil, errors.New("Connection not found")
 
 	}
 }
@@ -71,5 +73,5 @@ func (connMgr *ConnManager) CleanConn() {
 		conn.Stop()
 		delete(connMgr.connections, connID)
 	}
-	fmt.Println(" Clear All Connections sucessfully : conn num=", connMgr.Len())
+	fmt.Println("Clear All Connections sucessfully : conn num=", connMgr.Len())
 }

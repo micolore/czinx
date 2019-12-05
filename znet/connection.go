@@ -46,7 +46,7 @@ type Connection struct {
 	propertyLock sync.RWMutex
 }
 
-//v0.9 add server
+//创建connection
 func NewConnection(server ziface.Iserver, conn *net.TCPConn, connID uint32, msgHandler ziface.IMsgHandle) *Connection {
 
 	c := &Connection{
