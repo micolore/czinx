@@ -10,13 +10,13 @@ import (
 
 type DataPack struct{}
 
+//创建拆/封包器
 func NewDataPack() *DataPack {
-
 	return &DataPack{}
 }
 
+//获取head的长度，默认是8
 func (dp *DataPack) GetHeadLen() uint32 {
-
 	return 8
 }
 

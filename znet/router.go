@@ -4,6 +4,7 @@ import (
 	"czinx/ziface"
 )
 
+//定义基础路由
 type BaseRoute struct{}
 
 func (br *BaseRoute) PreHandle(req ziface.IRequest) {}

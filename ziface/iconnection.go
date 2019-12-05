@@ -19,14 +19,19 @@ type Iconnection interface {
 	//获取远程客户端地址信息
 	RemoteAddr() net.Addr
 
-	SendMsg(msgId uint32, data []byte) error //no buff
+	//发送消息-no buff
+	SendMsg(msgId uint32, data []byte) error
 
-	SendBuffMsg(msgID uint32, data []byte) error // have buff
+	//发送消息-have buff
+	SendBuffMsg(msgID uint32, data []byte) error
 
+	//设置属性
 	SetProperty(key string, value interface{})
 
+	//获取自定义属性
 	GetProperty(key string) (interface{}, error)
 
+	//删除属性信息
 	RemoveProperty(key string)
 }
 

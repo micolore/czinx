@@ -6,14 +6,17 @@ import (
 	"fmt"
 )
 
+//定义PingRouter
 type PingRouter struct {
 	znet.BaseRoute
 }
 
+//定义HelloZinxRouter
 type HelloZinxRouter struct {
 	znet.BaseRoute
 }
 
+//HelloZinxRouter的实现
 func (this *HelloZinxRouter) Handle(request ziface.IRequest) {
 	fmt.Println("call helloZinxRouter handle")
 	fmt.Println("recv from client : msgId=", request.GetMsgID(), ", data=", string(request.GetData()))
@@ -24,10 +27,12 @@ func (this *HelloZinxRouter) Handle(request ziface.IRequest) {
 	}
 }
 
+//PingRouter的实现
 func (this *PingRouter) Handle(req ziface.IRequest) {
 
 	fmt.Println("call router Handle")
 	msgDataStr := string(req.GetData())
+
 	fmt.Println("recv from client : msgId=", req.GetMsgID(), ", data=", msgDataStr)
 	err := req.GetConnection().SendMsg(1, []byte(" ping...ping...ping... "))
 
@@ -37,10 +42,10 @@ func (this *PingRouter) Handle(req ziface.IRequest) {
 
 }
 
+//请求连接开始的时候执行
 func DoConnectionBegin(conn ziface.Iconnection) {
 
 	fmt.Println("DoConnectionBegin is called")
-
 	err := conn.SendMsg(2, []byte("DoConnection Begin..."))
 
 	conn.SetProperty("name", "xiaowang")
@@ -51,6 +56,7 @@ func DoConnectionBegin(conn ziface.Iconnection) {
 	}
 }
 
+//请求连接关闭的时候执行
 func DoConnectionLost(conn ziface.Iconnection) {
 
 	if name, err := conn.GetProperty("name"); err == nil {
@@ -68,12 +74,19 @@ func DoConnectionLost(conn ziface.Iconnection) {
 
 func main() {
 
+	//创建server
 	s := znet.NewServer("[zinx v-0.9]")
+
+	//设置服务器启动执行的方法
 	s.SetOnConnStart(DoConnectionBegin)
+
+	//设置服务器停止执行的方法
 	s.SetOnConnStop(DoConnectionLost)
 
+	//添加路由到apis。根据msgID进行区分
 	s.AddRouter(0, &PingRouter{})
 	s.AddRouter(1, &HelloZinxRouter{})
 
+	//开启服务
 	s.Serve()
 }
