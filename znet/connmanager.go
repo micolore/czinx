@@ -19,7 +19,7 @@ func NewConnmanager() *ConnManager {
 
 	return &ConnManager{
 		connections: make(map[uint32]ziface.Iconnection),
-	}
+
 }
 
 //新增连接到连接管理器里面
